@@ -61,7 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BiorithmComponent.cs" />
+    <Compile Include="ParticleSwarmOptimisation.cs" />
     <Compile Include="BiorithmInfo.cs" />
     <Compile Include="PSO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

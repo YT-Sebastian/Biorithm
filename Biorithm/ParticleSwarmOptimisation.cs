@@ -11,7 +11,7 @@ using Rhino.Geometry;
 
 namespace Biorithm
 {
-    public class BiorithmComponent : GH_Component
+    public class ParticleSwarmOptimisation : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -20,10 +20,10 @@ namespace Biorithm
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public BiorithmComponent()
-          : base("Biorithm", "Nickname",
-              "Description",
-              "Category", "Subcategory")
+        public ParticleSwarmOptimisation()
+          : base("Particle Swarm Optimisation", "PSO",
+              "PSO",
+              "Biorithm", "Swarm")
         {
         }
 
