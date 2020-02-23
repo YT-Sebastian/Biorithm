@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 // In order to load the result of this wizard, you will also need to
@@ -26,12 +28,22 @@ namespace Biorithm
               "Biorithm", "Swarm")
         {
         }
-
+        
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddBooleanParameter("Run", "Run", "True to run, False to stop", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Reset", "Reset", "Reset the iterations", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Iterations", "Iternations", "Number of iterations. -1 for Infinite", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Interval", "Interval", "Interval of update in milliseconds", GH_ParamAccess.item);
+            pManager.AddPointParameter("Swarm", "Swarm", "Swarm as a list of points", GH_ParamAccess.list);
+            pManager.AddPointParameter("Fitness", "Fitness", "Fitness as a point", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Particle learning factor", "C1", "Learning factor for particles(agents)", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Swarm learning factor", "C2", "Learning factor for swarm(global)", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Influence factor", "C3", "Influence factor for movement", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Max Velocity", "Max", "Max speed Velocity of particles(agents)", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -39,6 +51,8 @@ namespace Biorithm
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddIntegerParameter("Iteration number", "Iteration", "iteration number complete", GH_ParamAccess.item);
+            pManager.AddCurveParameter("Output", "Output", "Output", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -48,8 +62,65 @@ namespace Biorithm
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            GH_Document GrasshopperDocument = base.OnPingDocument();
+            bool run =  new bool();
+            bool reset =  new bool();
+            int iterations = new int();
+            int interval = new int();
+            List<Point3d> agents = new List<Point3d>();
+
+            if (!DA.GetData(0, ref run)) return;
+            if (!DA.GetData(1, ref reset)) return;
+            if (!DA.GetData(2, ref iterations)) return;
+            if (!DA.GetData(3, ref interval)) return;
+            if (!DA.GetDataList(4, agents)) return;
+            if (!DA.GetData(5, ref fitness)) return;
+            if (!DA.GetData(6, ref c1)) return;
+            if (!DA.GetData(7, ref c2)) return;
+            if (!DA.GetData(8, ref influence)) return;
+            if (!DA.GetData(9, ref max)) return;
+
+            if (iterations != _maximum)
+            {
+                _maximum = iterations;
+                _counter = iterations;
+                swarm = new Swarm(agents, fitness);
+            }
+            
+            DA.SetData(0, _maximum - _counter);
+
+            _run = run;
+            if (_counter == 0)
+                _run = false;
+
+            if (_run)
+                GrasshopperDocument.ScheduleSolution(interval, ScheduleCallback);
+
+            if (reset)
+            {
+                _counter = iterations;
+                swarm = new Swarm(agents, fitness);
+            }
         }
 
+        private int _maximum = -1;
+        private int _counter = -1;
+        private bool _run = false;
+
+        Swarm swarm;
+        List<Polyline> output;
+        
+        Point3d fitness = new Point3d();
+        double c1 = new double();
+        double c2 = new double();
+        double influence = new double();
+        double max = new double();
+
+        private void ScheduleCallback(GH_Document document)
+        {
+            _counter--;
+            this.ExpireSolution(false);
+        }
         /// <summary>
         /// Provides an Icon for every component that will be visible in the User Interface.
         /// Icons need to be 24x24 pixels.
