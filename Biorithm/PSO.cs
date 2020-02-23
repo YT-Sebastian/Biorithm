@@ -41,15 +41,17 @@ namespace Biorithm
 
         public Swarm() { }
 
-        public Swarm(List<Point3d> agents, Point3d fitness)
+        public Swarm(List<Point3d> agents, Curve fitness)
         {
             rnd = new RandomUniformDistribution(agents.Count);
-            globalFitnessValue = globalBest.DistanceTo(fitness);
+            fitness.ClosestPoint(globalBest, out double t);
+            globalFitnessValue = globalBest.DistanceTo(fitness.PointAt(t));
 
             for (int i = 0; i < agents.Count; i++)
             {
-                bodies.Add(new Particle(agents[i], new Vector3d(rnd.Next(), rnd.Next(), rnd.Next())));
-                bodies[i].particleFitnessValue = agents[i].DistanceTo(fitness);
+                bodies.Add(new Particle(agents[i], new Vector3d((rnd.Next() * 2) - 1, (rnd.Next() * 2) - 1, (rnd.Next() * 2) - 1)));
+                fitness.ClosestPoint(agents[i], out t);
+                bodies[i].particleFitnessValue = agents[i].DistanceTo(fitness.PointAt(t));
 
                 if (bodies[i].particleFitnessValue < globalFitnessValue)
                 {
@@ -64,13 +66,15 @@ namespace Biorithm
             foreach (Particle i in bodies)
             {
                 Vector3d toPbest = new Vector3d(i.particleBest - i.position);
+                toPbest.Unitize();
                 Vector3d toGbest = new Vector3d(globalBest - i.position);
+                toGbest.Unitize();
 
                 double pbestMultiplier = particleLearningFactor * rnd.Next();
                 double gbestMultiplier = globalLearningFactor * rnd.Next();
 
                 Vector3d moveVector = (toPbest * pbestMultiplier) + (toGbest * gbestMultiplier);
-                Vector3d rndInfluence = new Vector3d(rnd.Next(), rnd.Next(), rnd.Next()) * influenceFactor;
+                Vector3d rndInfluence = new Vector3d((rnd.Next() * 2) - 1, (rnd.Next() * 2) - 1, (rnd.Next() * 2) - 1) * influenceFactor;
 
                 i.velocity += (moveVector + rndInfluence);
 
@@ -81,14 +85,16 @@ namespace Biorithm
             }
         }
 
-        public void UpdatePosition(Point3d fitness)
+        public void UpdatePosition(Curve fitness)
         {
             foreach (Particle i in bodies)
             {
                 i.position += i.velocity;
                 i.history.Add(i.position);
 
-                double particleFitnessValue = i.position.DistanceTo(fitness);
+                fitness.ClosestPoint(i.position, out double t);
+
+                double particleFitnessValue = i.position.DistanceTo(fitness.PointAt(t));
 
                 if (particleFitnessValue < i.particleFitnessValue)
                 {

@@ -39,7 +39,7 @@ namespace Biorithm
             pManager.AddIntegerParameter("Iterations", "Iternations", "Number of iterations. -1 for Infinite", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Interval", "Interval", "Interval of update in milliseconds", GH_ParamAccess.item);
             pManager.AddPointParameter("Swarm", "Swarm", "Swarm as a list of points", GH_ParamAccess.list);
-            pManager.AddPointParameter("Fitness", "Fitness", "Fitness as a point", GH_ParamAccess.item);
+            pManager.AddCurveParameter("Fitness", "Fitness", "Fitness as a curve", GH_ParamAccess.item);
             pManager.AddNumberParameter("Particle learning factor", "C1", "Learning factor for particles(agents)", GH_ParamAccess.item);
             pManager.AddNumberParameter("Swarm learning factor", "C2", "Learning factor for swarm(global)", GH_ParamAccess.item);
             pManager.AddNumberParameter("Influence factor", "C3", "Influence factor for movement", GH_ParamAccess.item);
@@ -72,7 +72,7 @@ namespace Biorithm
             if (!DA.GetData(0, ref run)) return;
             if (!DA.GetData(1, ref reset)) return;
             if (!DA.GetData(2, ref iterations)) return;
-            if (!DA.GetData(3, ref interval)) return;
+            if ((!DA.GetData(3, ref interval)) | (interval < 1)) return;
             if (!DA.GetDataList(4, agents)) return;
             if (!DA.GetData(5, ref fitness)) return;
             if (!DA.GetData(6, ref c1)) return;
@@ -113,8 +113,8 @@ namespace Biorithm
 
         private Swarm swarm =  new Swarm();
         private List<Polyline> output = new List<Polyline>();
-        
-        Point3d fitness = new Point3d();
+
+        Curve fitness;
         double c1 = new double();
         double c2 = new double();
         double influence = new double();
