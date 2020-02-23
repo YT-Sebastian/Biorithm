@@ -20,7 +20,7 @@ namespace Biorithm
         public Point3d position;
         public Point3d particleBest;
         public Vector3d velocity;
-        public List<Point3d> history;
+        public List<Point3d> history = new List<Point3d>();
         public double particleFitnessValue;
 
         public Particle(Point3d startPosition, Vector3d startVelocity)
@@ -28,16 +28,18 @@ namespace Biorithm
             position = startPosition;
             particleBest = startPosition;
             velocity = startVelocity;
-            history.Add(position);
+            history.Add(startPosition);
         }
     }
 
     public class Swarm
     {
-        public List<Particle> bodies;
+        public List<Particle> bodies = new List<Particle>();
         public Point3d globalBest = new Point3d(0,0,0);
         public RandomUniformDistribution rnd;
         public double globalFitnessValue;
+
+        public Swarm() { }
 
         public Swarm(List<Point3d> agents, Point3d fitness)
         {
@@ -68,8 +70,9 @@ namespace Biorithm
                 double gbestMultiplier = globalLearningFactor * rnd.Next();
 
                 Vector3d moveVector = (toPbest * pbestMultiplier) + (toGbest * gbestMultiplier);
+                Vector3d rndInfluence = new Vector3d(rnd.Next(), rnd.Next(), rnd.Next()) * influenceFactor;
 
-                i.velocity += moveVector;
+                i.velocity += (moveVector + rndInfluence);
 
                 if (i.velocity.Length > maxVelocity)
                 {

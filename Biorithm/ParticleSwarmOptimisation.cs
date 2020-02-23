@@ -88,14 +88,18 @@ namespace Biorithm
             }
             
             DA.SetData(0, _maximum - _counter);
+            DA.SetDataList(1, output);
 
             _run = run;
             if (_counter == 0)
                 _run = false;
 
             if (_run)
-                GrasshopperDocument.ScheduleSolution(interval, ScheduleCallback);
-
+            {
+                if (!DA.GetData(5, ref fitness)) return;
+                GH_Document.GH_ScheduleDelegate gH_ScheduleDelegate = new GH_Document.GH_ScheduleDelegate(this.ScheduleCallback);
+                GrasshopperDocument.ScheduleSolution(interval, gH_ScheduleDelegate);
+            }
             if (reset)
             {
                 _counter = iterations;
@@ -107,8 +111,8 @@ namespace Biorithm
         private int _counter = -1;
         private bool _run = false;
 
-        Swarm swarm;
-        List<Polyline> output;
+        private Swarm swarm =  new Swarm();
+        private List<Polyline> output = new List<Polyline>();
         
         Point3d fitness = new Point3d();
         double c1 = new double();
@@ -119,6 +123,20 @@ namespace Biorithm
         private void ScheduleCallback(GH_Document document)
         {
             _counter--;
+
+            swarm.ParticleSwarmOptimisation(c1, c2, influence, max);
+            swarm.UpdatePosition(fitness);
+
+            output.Clear();
+            foreach (Particle i in swarm.bodies)
+            {
+                if (i.history.Count > 1)
+                {
+                    Polyline path = new Polyline(i.history);
+                    output.Add(path);
+                }
+            }
+            
             this.ExpireSolution(false);
         }
         /// <summary>
