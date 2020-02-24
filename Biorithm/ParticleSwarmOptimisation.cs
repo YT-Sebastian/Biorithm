@@ -96,9 +96,7 @@ namespace Biorithm
 
             if (_run)
             {
-                if (!DA.GetData(5, ref fitness)) return;
-                GH_Document.GH_ScheduleDelegate gH_ScheduleDelegate = new GH_Document.GH_ScheduleDelegate(this.ScheduleCallback);
-                GrasshopperDocument.ScheduleSolution(interval, gH_ScheduleDelegate);
+                GrasshopperDocument.ScheduleSolution(interval, ScheduleCallback);
             }
             if (reset)
             {
