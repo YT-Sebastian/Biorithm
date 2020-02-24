@@ -61,7 +61,8 @@ namespace Biorithm
             }
         }
 
-        public void ParticleSwarmOptimisation(double particleLearningFactor, double globalLearningFactor, double influenceFactor, double maxVelocity)
+        public void ParticleSwarmOptimisation(double particleLearningFactor, double globalLearningFactor, double influenceFactor, double maxVelocity, 
+            List<Curve> attract, double attractFactor, Brep boundary, double boundaryFactor)
         {
             foreach (Particle i in bodies)
             {
@@ -76,7 +77,25 @@ namespace Biorithm
                 Vector3d moveVector = (toPbest * pbestMultiplier) + (toGbest * gbestMultiplier);
                 Vector3d rndInfluence = new Vector3d((rnd.Next() * 2) - 1, (rnd.Next() * 2) - 1, (rnd.Next() * 2) - 1) * influenceFactor;
 
-                i.velocity += (moveVector + rndInfluence);
+                Vector3d attractVector = new Vector3d();
+
+                foreach (Curve c in attract)
+                {
+                    c.ClosestPoint(i.position, out double t2);
+                    attractVector += (c.PointAt(t2) - i.position) * (1 / i.position.DistanceTo(c.PointAt(t2)));
+                }
+
+                attractVector.Unitize();
+
+                Vector3d boundaryVector = new Vector3d();
+
+                if (!boundary.IsPointInside(i.position, RhinoMath.SqrtEpsilon, false))
+                {
+                    boundaryVector += boundary.ClosestPoint(i.position) - i.position;
+                    boundaryVector.Unitize();
+                }
+
+                i.velocity += (moveVector + rndInfluence + (attractVector * attractFactor) + (boundaryVector * boundaryFactor));
 
                 if (i.velocity.Length > maxVelocity)
                 {

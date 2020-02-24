@@ -44,6 +44,10 @@ namespace Biorithm
             pManager.AddNumberParameter("Swarm learning factor", "C2", "Learning factor for swarm(global)", GH_ParamAccess.item);
             pManager.AddNumberParameter("Influence factor", "C3", "Influence factor for movement", GH_ParamAccess.item);
             pManager.AddNumberParameter("Max Velocity", "Max", "Max speed Velocity of particles(agents)", GH_ParamAccess.item);
+            pManager.AddCurveParameter("Attractor", "Attractor", "Attractor Curve", GH_ParamAccess.list);
+            pManager.AddNumberParameter("Attractor factor", "Attractor factor", "Attraction factor", GH_ParamAccess.item);
+            pManager.AddBrepParameter("Boundary", "Boundary", "Boundary", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Boundary factor", "Boundary factor", "Boundary factor", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -79,6 +83,10 @@ namespace Biorithm
             if (!DA.GetData(7, ref c2)) return;
             if (!DA.GetData(8, ref influence)) return;
             if (!DA.GetData(9, ref max)) return;
+            if (!DA.GetDataList(10, attract)) return;
+            if (!DA.GetData(11, ref attractFactor)) return;
+            if (!DA.GetData(12, ref boundary)) return;
+            if (!DA.GetData(13, ref boundaryFactor)) return;
 
             if (iterations != _maximum)
             {
@@ -118,11 +126,16 @@ namespace Biorithm
         double influence = new double();
         double max = new double();
 
+        List<Curve> attract =  new List<Curve>();
+        double attractFactor = new double();
+        Brep boundary;
+        double boundaryFactor = new double();
+
         private void ScheduleCallback(GH_Document document)
         {
             _counter--;
 
-            swarm.ParticleSwarmOptimisation(c1, c2, influence, max);
+            swarm.ParticleSwarmOptimisation(c1, c2, influence, max, attract, attractFactor, boundary, boundaryFactor);
             swarm.UpdatePosition(fitness);
 
             output.Clear();
