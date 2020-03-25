@@ -99,21 +99,27 @@ namespace Biorithm
             DA.SetDataList(1, output);
 
             _run = run;
+
             if (_counter == 0)
+            {
                 _run = false;
+            }
 
             if (_run)
             {
                 GrasshopperDocument.ScheduleSolution(interval, ScheduleCallback);
             }
+
             if (reset)
             {
+                _maximum = iterations;
                 _counter = iterations;
                 swarm = new Swarm(agents, fitness);
+                GrasshopperDocument.ScheduleSolution(interval, ScheduleCallback);
             }
         }
 
-        private int _maximum = -1;
+        private int _maximum = int.MinValue;
         private int _counter = -1;
         private bool _run = false;
 
